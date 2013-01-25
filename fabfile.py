@@ -1,7 +1,7 @@
 from fabric.api import local, abort, run, lcd, cd, settings, sudo, env
 from fabric.contrib.console import confirm
 
-PROJECTS = ['mtrack', 'ureport', 'emis', 'edtrac', 'status160']
+PROJECTS = ['ureport']
 STANDARD_REPOS = [
    'django-eav',
    'rapidsms',
@@ -23,7 +23,7 @@ REPOS_WITH_SRC_NAME = [
     'rapidsms-xforms'
 ]
 
-def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefuganda'):
+def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefburundi'):
     print "Fix owner is %s" % fix_owner
     if not dest in ['prod', 'test']:
         abort('must specify a valid dest: prod or test')
@@ -128,8 +128,8 @@ def add_all_submodules(project, dev=False):
                 dest_folder = "%s_project/%s_src" % (project, repo.replace("-", "_"))
             with settings(warn_only=True):
                 if local("test -d %s" % dest_folder).failed:
-                    local("git submodule add git://github.com/unicefuganda/%s %s" % (repo, dest_folder))
+                    local("git submodule add git://github.com/unicefburundi/%s %s" % (repo, dest_folder))
                 if dev == 'True':
                     with settings(warn_only=False):
                         with lcd(dest_folder):
-                            local("git remote add dev git@github.com:unicefuganda/%s" % repo)
+                            local("git remote add dev git@github.com:unicefburundi/%s" % repo)
