@@ -23,7 +23,7 @@ REPOS_WITH_SRC_NAME = [
     'rapidsms-xforms'
 ]
 
-def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefburundi'):
+def deploy(project='all', dest='ureport-test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefburundi'):
     print "Fix owner is %s" % fix_owner
     if not dest in ['prod', 'test']:
         abort('must specify a valid dest: prod or test')
