@@ -50,19 +50,19 @@ def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='
             run("git submodule foreach git config core.filemode false")
             with cd("%s_project" % p):
                 if syncdb == 'True':
-                    run("/var/www/env/%s/bin/python manage.py syncdb" % dest)
+                    run("/var/www/envs/%s/bin/python manage.py syncdb" % dest)
                 if south == 'True':
-                    run("/var/www/env/%s/bin/python manage.py migrate" % dest)
+                    run("/var/www/envs/%s/bin/python manage.py migrate" % dest)
                 else:
                     if confirm('Check for pending migrations?', default=True):
-                        run("/var/www/env/%s/bin/python manage.py migrate --list | awk '$0 !~ /\*/ && $0 !~ /^$/' " % dest)
+                        run("/var/www/envs/%s/bin/python manage.py migrate --list | awk '$0 !~ /\*/ && $0 !~ /^$/' " % dest)
                 if init_data == 'True':
                    # in mtrack, this loads initial data
                    # which doesn't specifically mean fixtures (which are loaded during syncdb and  migrations)
-                   run("/var/www/env/%s/bin/python manage.py %s_init" % (dest, p))
+                   run("/var/www/envs/%s/bin/python manage.py %s_init" % (dest, p))
                 if south_initial == 'True':
-                    run("/var/www/env/%s/bin/python manage.py migrate --fake" % dest)
-                    run("/var/www/env/%s/bin/python manage.py migrate" % dest)
+                    run("/var/www/envs/%s/bin/python manage.py migrate --fake" % dest)
+                    run("/var/www/envs/%s/bin/python manage.py migrate" % dest)
 
         if not fix_owner == 'False':
             with cd("%s../" % code_dir):
