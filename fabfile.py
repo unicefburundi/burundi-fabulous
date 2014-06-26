@@ -40,7 +40,6 @@ def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='
         abort('must specify a valid project: all or one of %s' % PROJECTS)
     projects = PROJECTS if project == 'all' else [project]
     for p in projects:
-        #/var/www/test/upreport
         code_dir = "/var/www/%s/%s/" % (dest, p)
         with settings(warn_only=True):
             if run("test -d %s" % code_dir).failed:
@@ -56,7 +55,7 @@ def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='
             run("git submodule sync")
             run("git submodule update")
             run("git submodule foreach git config core.filemode false")
-            with cd("%s_project" % p):
+            with cd("/var/www/%s/%s" % (dest, p)):
                 if syncdb == 'True':
                     run("/var/www/envs/%s/bin/python manage.py syncdb" % dest)
                 if south == 'True':
