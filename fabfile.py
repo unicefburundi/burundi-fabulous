@@ -1,7 +1,7 @@
 from fabric.api import local, abort, run, lcd, cd, settings, sudo, env
 from fabric.contrib.console import confirm
 
-PROJECTS = ['mtrack', 'ureport', 'emis', 'edtrac', 'status160']
+PROJECTS = ['ureport_project']
 STANDARD_REPOS = [
    'django-eav',
    'rapidsms',
@@ -16,6 +16,7 @@ STANDARD_REPOS = [
    'rapidsms-unregister',
    'rapidsms-ureport',
    'rapidsms-xforms',
+   'rapidsms-proxy',
 ]
 
 REPOS_WITH_SRC_NAME = [
@@ -23,7 +24,13 @@ REPOS_WITH_SRC_NAME = [
     'rapidsms-xforms'
 ]
 
-def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefuganda'):
+def test():
+    env.hosts = ['rapid-test.unicefburundi.org']
+
+def prod():
+    env.hosts = ['rapid-server.unicefburundi.org']
+
+def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='False', south_initial='False', init_data='False',hash='False', base_git_user='unicefburundi'):
     print "Fix owner is %s" % fix_owner
     if not dest in ['prod', 'test']:
         abort('must specify a valid dest: prod or test')
@@ -76,20 +83,37 @@ def deploy(project='all', dest='test', fix_owner='True', syncdb='False', south='
 	#sudo("service nginx restart") #we don't need to restart nginx, only the uwsgi process corresponding to proc_name
         sudo("supervisorctl restart %s" % proc_name)
 
-
-def copy_db(project='all'):
+def update_db(project='all'):
     if project != 'all' and project not in PROJECTS \
         and not confirm("Project %s not in known projects (%s), proceed anyway?" % (project, PROJECTS)):
         abort('must specify a valid project: all or one of %s' % PROJECTS)
     projects = PROJECTS if project == 'all' else [project]
 
     for p in projects:
-        sudo("pg_dump %s > /tmp/%s.pgsql" % (p, p), user="postgres")
         with settings(warn_only=True):
-            sudo("dropdb %s-test" % p, user="postgres")
-        sudo("createdb %s-test" % p, user="postgres")
-        sudo("psql %s-test < /tmp/%s.pgsql" % (p, p), user="postgres")
+            sudo("dropdb %s_test" % p, user="postgres")
+        sudo("createdb %s_test" % p, user="postgres")
+        sudo("psql %s_test < /tmp/%s.pgsql" % (p, p), user="postgres")
         sudo("rm /tmp/%s.pgsql" % p, user="postgres")
+
+def copy_db(project='all', dest=None):
+    if project != 'all' and project not in PROJECTS \
+        and not confirm("Project %s not in known projects (%s), proceed anyway?" % (project, PROJECTS)):
+        abort('must specify a valid project: all or one of %s' % PROJECTS)
+    projects = PROJECTS if project == 'all' else [project]
+
+    if dest is None:
+        dest = env.host_string 
+
+    for p in projects:
+        sudo("pg_dump %s > /tmp/%s.pgsql" % (p, p), user="postgres")
+        local("scp %s:/tmp/%s.pgsql %s:/tmp/%s.pgsql" % (env.host_string, p, dest, p))
+
+#        with settings(warn_only=True):
+#            sudo("dropdb -h %s %s_test" % p, dest, user="postgres")
+#        sudo("createdb -h %s %s_test" % p, dest, user="postgres")
+#        sudo("psql -h %s %s_test < /tmp/%s.pgsql" % (p, dest, p), user="postgres")
+#        sudo("rm /tmp/%s.pgsql" % p, user="postgres")
 
 
 def pull_db(project='all', delete_local=True, from_local=False):
